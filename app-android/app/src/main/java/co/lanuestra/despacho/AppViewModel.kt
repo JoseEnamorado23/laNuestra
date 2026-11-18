@@ -12,7 +12,7 @@ import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import org.json.JSONObject
 
-const val URL_POR_DEFECTO = "https://envy-handstand-customary.ngrok-free.dev"
+const val URL_POR_DEFECTO = "https://34-205-52-30.sslip.io"
 
 class AppViewModel(app: Application) : AndroidViewModel(app) {
     private val ajustes = Ajustes(app)

@@ -55,7 +55,7 @@ fun PantallaMas(vm: AppViewModel, nav: Navegador) {
             item { OpcionMenu(Icons.Filled.Dns, "Servidor", vm.url.removePrefix("https://")) {} }
             item { OpcionMenu(Icons.AutoMirrored.Filled.Logout, "Cerrar sesión", null) { confirmarSalir = true } }
             item {
-                Text("La Nuestra Despacho · versión 2.0", style = MaterialTheme.typography.labelSmall,
+                Text("La Nuestra Despacho · versión 2.1", style = MaterialTheme.typography.labelSmall,
                     color = MaterialTheme.colorScheme.outline, modifier = Modifier.padding(8.dp))
             }
         }
