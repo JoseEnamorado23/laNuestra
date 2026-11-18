@@ -1,0 +1,57 @@
+{
+  "nombre": "La Nuestra",
+  "nombre_agente": "Aqua",
+  "moneda": "COP",
+  "horario": "Lunes a sábado de 7:00 a.m. a 6:00 p.m.",
+  "zonas_de_entrega": "Toda la ciudad (CAMBIAR por los barrios o zonas reales)",
+  "costo_domicilio": 0,
+  "pedido_minimo": 0,
+  "tiempo_de_entrega": "El mismo día si el pedido entra antes de las 3:00 p.m.; si no, al día siguiente.",
+  "metodos_de_pago": [
+    "efectivo",
+    "transferencia"
+  ],
+  "datos_transferencia": "Nequi 300 000 0000 (CAMBIAR)",
+  "productos": [
+    {
+      "id": "botellon-20l",
+      "nombre": "Botellón 20 litros (recarga)",
+      "precio": 8000,
+      "costo": 0,
+      "stock_minimo": 20,
+      "disponible": false
+    },
+    {
+      "id": "botellon-20l-envase",
+      "nombre": "Botellón 20 litros con envase nuevo",
+      "precio": 28000,
+      "costo": 0,
+      "stock_minimo": 20,
+      "disponible": false
+    },
+    {
+      "id": "paca-bolsa-350ml",
+      "nombre": "Paca de agua en bolsa pequeña 350 ml x 30 unidades",
+      "precio": 5000,
+      "costo": 0,
+      "stock_minimo": 20,
+      "disponible": true
+    },
+    {
+      "id": "paca-bolsa-6l",
+      "nombre": "Paca de bolsas grandes 6 litros x 4 unidades",
+      "precio": 9000,
+      "costo": 0,
+      "stock_minimo": 20,
+      "disponible": true
+    },
+    {
+      "id": "paca-botella-600ml",
+      "nombre": "Paca de botellas 600 ml x 24 unidades",
+      "precio": 22000,
+      "costo": 0,
+      "stock_minimo": 20,
+      "disponible": false
+    }
+  ]
+}

@@ -1,0 +1,229 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Pedidos de agua</title>
+<style>
+  :root {
+    --fondo: #f3f6f8; --panel: #ffffff; --tinta: #10222e; --suave: #5d7482; --linea: #dbe4ea;
+    --agua: #0b7fab; --agua-claro: #e3f3fa; --burbuja: #d9f7c9; --alerta: #b4530a; --alerta-fondo: #fff1dc;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --fondo: #0d171d; --panel: #15232c; --tinta: #e6eef3; --suave: #8fa6b3; --linea: #263a46;
+      --agua: #4fb8e0; --agua-claro: #15303d; --burbuja: #1f4a35; --alerta: #f0b168; --alerta-fondo: #3a2a14;
+    }
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--fondo); color: var(--tinta); font: 15px/1.45 system-ui, "Segoe UI", sans-serif; }
+  header { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; padding: 14px 20px; background: var(--panel); border-bottom: 1px solid var(--linea); }
+  header h1 { font-size: 18px; margin: 0; flex: 1; min-width: 200px; }
+  .chip { font-size: 12px; padding: 3px 10px; border-radius: 99px; border: 1px solid var(--linea); color: var(--suave); white-space: nowrap; }
+  .chip.ok { color: var(--agua); border-color: var(--agua); }
+  .chip.falta { color: var(--alerta); border-color: var(--alerta); background: var(--alerta-fondo); }
+  main { display: grid; grid-template-columns: minmax(0, 1fr) 380px; gap: 16px; padding: 16px 20px; max-width: 1400px; margin: 0 auto; }
+  @media (max-width: 960px) { main { grid-template-columns: 1fr; padding: 16px; } }
+  section { background: var(--panel); border: 1px solid var(--linea); border-radius: 12px; overflow: hidden; }
+  section > h2 { font-size: 14px; margin: 0; padding: 12px 16px; border-bottom: 1px solid var(--linea); display: flex; align-items: center; gap: 8px; }
+  section > h2 span { color: var(--suave); font-weight: 400; }
+  .filtros { display: flex; gap: 6px; padding: 10px 16px; flex-wrap: wrap; border-bottom: 1px solid var(--linea); }
+  .filtros button { font: inherit; font-size: 13px; padding: 4px 12px; border-radius: 99px; border: 1px solid var(--linea); background: transparent; color: var(--suave); cursor: pointer; }
+  .filtros button.activo { background: var(--agua); border-color: var(--agua); color: #fff; }
+  #pedidos { padding: 12px 16px; display: grid; gap: 10px; }
+  .pedido { border: 1px solid var(--linea); border-radius: 10px; padding: 12px 14px; display: grid; gap: 6px; }
+  .pedido.nuevo { border-left: 4px solid var(--agua); }
+  .pedido.cancelado, .pedido.entregado { opacity: .6; }
+  .fila { display: flex; justify-content: space-between; gap: 10px; align-items: baseline; flex-wrap: wrap; }
+  .pedido b.id { font-variant-numeric: tabular-nums; }
+  .pedido .meta { color: var(--suave); font-size: 13px; }
+  .pedido ul { margin: 2px 0; padding-left: 18px; }
+  .pedido .total { font-weight: 600; font-variant-numeric: tabular-nums; }
+  select { font: inherit; font-size: 13px; padding: 4px 8px; border-radius: 8px; border: 1px solid var(--linea); background: var(--panel); color: var(--tinta); }
+  .vacio { color: var(--suave); padding: 28px 8px; text-align: center; }
+  #avisos { padding: 0 16px; }
+  .aviso { margin-top: 12px; padding: 8px 12px; border-radius: 8px; background: var(--alerta-fondo); color: var(--alerta); font-size: 13px; }
+  /* simulador */
+  .chat { display: flex; flex-direction: column; height: min(640px, 75vh); }
+  .chat .barra { display: flex; gap: 8px; padding: 10px 12px; border-bottom: 1px solid var(--linea); align-items: center; }
+  .chat .barra input { flex: 1; min-width: 0; }
+  input[type=text] { font: inherit; padding: 7px 10px; border-radius: 8px; border: 1px solid var(--linea); background: var(--fondo); color: var(--tinta); }
+  button.accion { font: inherit; padding: 7px 14px; border-radius: 8px; border: 0; background: var(--agua); color: #fff; cursor: pointer; }
+  button.secundario { font: inherit; font-size: 13px; padding: 6px 10px; border-radius: 8px; border: 1px solid var(--linea); background: transparent; color: var(--suave); cursor: pointer; }
+  button:disabled { opacity: .5; cursor: default; }
+  #mensajes { flex: 1; overflow-y: auto; padding: 14px 12px; display: flex; flex-direction: column; gap: 8px; background: var(--fondo); }
+  .msg { max-width: 85%; padding: 8px 11px; border-radius: 10px; white-space: pre-wrap; overflow-wrap: anywhere; background: var(--panel); border: 1px solid var(--linea); align-self: flex-start; }
+  .msg.yo { align-self: flex-end; background: var(--burbuja); border-color: transparent; }
+  .msg.error { background: var(--alerta-fondo); color: var(--alerta); border-color: transparent; }
+  .msg.pensando { color: var(--suave); font-style: italic; }
+  .chat form { display: flex; gap: 8px; padding: 10px 12px; border-top: 1px solid var(--linea); }
+  .chat form input { flex: 1; min-width: 0; }
+</style>
+</head>
+<body>
+<header>
+  <h1 id="titulo">Pedidos de agua</h1>
+  <span class="chip" id="chip-agente">Claude…</span>
+  <span class="chip" id="chip-whatsapp">WhatsApp…</span>
+  <span class="chip" id="chip-twilio">Twilio…</span>
+</header>
+
+<main>
+  <section>
+    <h2>Pedidos <span id="conteo"></span></h2>
+    <div class="filtros" id="filtros"></div>
+    <div id="avisos"></div>
+    <div id="pedidos"><div class="vacio">Cargando…</div></div>
+  </section>
+
+  <section class="chat">
+    <h2>Simulador de WhatsApp <span>(sin número real)</span></h2>
+    <div class="barra">
+      <input type="text" id="telefono" value="573001112233" aria-label="Teléfono simulado del cliente">
+      <button class="secundario" id="reiniciar" title="Borra el historial de este teléfono">Reiniciar chat</button>
+    </div>
+    <div id="mensajes"></div>
+    <form id="formulario">
+      <input type="text" id="texto" placeholder="Escribe como si fueras el cliente…" autocomplete="off">
+      <button class="accion" id="enviar">Enviar</button>
+    </form>
+  </section>
+</main>
+
+<script>
+const ESTADOS = { nuevo: "Nuevo", confirmado: "Confirmado", en_camino: "En camino", entregado: "Entregado", cancelado: "Cancelado" };
+const $ = (id) => document.getElementById(id);
+let filtro = "activos";
+let ultimaFirma = "";
+
+function el(etiqueta, clase, texto) {
+  const nodo = document.createElement(etiqueta);
+  if (clase) nodo.className = clase;
+  if (texto !== undefined) nodo.textContent = texto;
+  return nodo;
+}
+const dinero = (n) => "$" + Number(n).toLocaleString("es-CO");
+const fecha = (iso) => new Date(iso).toLocaleString("es-CO", { dateStyle: "medium", timeStyle: "short" });
+
+// ---------- estado ----------
+async function cargarEstado() {
+  const e = await (await fetch("/api/estado")).json();
+  $("titulo").textContent = "Pedidos · " + e.negocio;
+  $("chip-agente").textContent = e.agente ? "Claude conectado" : "Falta ANTHROPIC_API_KEY";
+  $("chip-agente").className = "chip " + (e.agente ? "ok" : "falta");
+  $("chip-whatsapp").textContent = e.whatsapp ? "WhatsApp Meta conectado" : "WhatsApp Meta sin conectar";
+  $("chip-whatsapp").className = "chip " + (e.whatsapp ? "ok" : "");
+  $("chip-twilio").textContent = e.twilio ? "Twilio conectado (sandbox)" : "Twilio sin conectar";
+  $("chip-twilio").className = "chip " + (e.twilio ? "ok" : "");
+}
+
+// ---------- pedidos ----------
+function dibujarFiltros() {
+  const opciones = { activos: "Activos", todos: "Todos", ...ESTADOS };
+  $("filtros").replaceChildren(...Object.entries(opciones).map(([clave, nombre]) => {
+    const b = el("button", clave === filtro ? "activo" : "", nombre);
+    b.onclick = () => { filtro = clave; ultimaFirma = ""; dibujarFiltros(); cargarPedidos(); };
+    return b;
+  }));
+}
+
+function tarjeta(p) {
+  const t = el("div", "pedido " + p.estado);
+  const cabecera = el("div", "fila");
+  const izquierda = el("div");
+  izquierda.append(el("b", "id", p.id), " · " + p.nombre_cliente);
+  const selector = el("select");
+  for (const [valor, nombre] of Object.entries(ESTADOS)) {
+    const o = el("option", "", nombre); o.value = valor; o.selected = valor === p.estado; selector.append(o);
+  }
+  selector.onchange = async () => {
+    await fetch("/api/pedidos/" + encodeURIComponent(p.id), {
+      method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ estado: selector.value }),
+    });
+    ultimaFirma = ""; cargarPedidos();
+  };
+  cabecera.append(izquierda, selector);
+
+  const lista = el("ul");
+  for (const i of p.items) lista.append(el("li", "", `${i.cantidad} × ${i.nombre} — ${dinero(i.subtotal)}`));
+
+  const pie = el("div", "fila");
+  pie.append(el("span", "meta", `${fecha(p.creado)} · WhatsApp ${p.telefono} · ${p.metodo_pago}`), el("span", "total", dinero(p.total)));
+
+  t.append(cabecera, el("div", "", "📍 " + p.direccion), lista);
+  if (p.notas) t.append(el("div", "meta", "Nota: " + p.notas));
+  t.append(pie);
+  return t;
+}
+
+async function cargarPedidos() {
+  let pedidos, conversaciones;
+  try {
+    [pedidos, conversaciones] = await Promise.all([
+      fetch("/api/pedidos").then((r) => r.json()),
+      fetch("/api/conversaciones").then((r) => r.json()),
+    ]);
+  } catch { return; }
+
+  const firma = JSON.stringify([pedidos, conversaciones.map((c) => c.requiere_humano), filtro]);
+  if (firma === ultimaFirma) return; // nada cambió: no redibujar (evita cerrar un selector abierto)
+  ultimaFirma = firma;
+
+  const visibles = pedidos.filter((p) =>
+    filtro === "todos" ? true :
+    filtro === "activos" ? !["entregado", "cancelado"].includes(p.estado) :
+    p.estado === filtro);
+  $("conteo").textContent = `(${visibles.length} de ${pedidos.length})`;
+  $("pedidos").replaceChildren(...(visibles.length
+    ? visibles.map(tarjeta)
+    : [el("div", "vacio", "Aún no hay pedidos aquí. Haz uno desde el simulador →")]));
+
+  $("avisos").replaceChildren(...conversaciones.filter((c) => c.requiere_humano).map((c) =>
+    el("div", "aviso", `🙋 ${c.nombre || c.telefono} (${c.telefono}) pide un asesor: ${c.requiere_humano.motivo}`)));
+}
+
+// ---------- simulador ----------
+function burbuja(texto, clase) {
+  const b = el("div", "msg " + (clase || ""), texto);
+  $("mensajes").append(b);
+  $("mensajes").scrollTop = $("mensajes").scrollHeight;
+  return b;
+}
+
+$("formulario").onsubmit = async (evento) => {
+  evento.preventDefault();
+  const texto = $("texto").value.trim();
+  const telefono = $("telefono").value.trim();
+  if (!texto || !telefono) return;
+  $("texto").value = "";
+  $("enviar").disabled = true;
+  burbuja(texto, "yo");
+  const espera = burbuja("escribiendo…", "pensando");
+  try {
+    const r = await fetch("/api/simular", {
+      method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ telefono, texto }),
+    });
+    const datos = await r.json();
+    espera.remove();
+    if (r.ok) burbuja(datos.respuesta); else burbuja(datos.error || "Error", "error");
+  } catch (error) {
+    espera.remove();
+    burbuja("No se pudo contactar al servidor: " + error.message, "error");
+  }
+  $("enviar").disabled = false;
+  $("texto").focus();
+  cargarPedidos();
+};
+
+$("reiniciar").onclick = async () => {
+  await fetch("/api/conversaciones/" + encodeURIComponent($("telefono").value.trim()), { method: "DELETE" });
+  $("mensajes").replaceChildren();
+};
+
+dibujarFiltros();
+cargarEstado();
+cargarPedidos();
+setInterval(cargarPedidos, 4000);
+</script>
+</body>
+</html>

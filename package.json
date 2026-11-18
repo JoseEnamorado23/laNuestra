@@ -1,0 +1,19 @@
+{
+  "name": "agente-agua",
+  "version": "1.0.0",
+  "description": "Agente de IA que atiende WhatsApp, toma pedidos de agua y los carga en un panel",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "start": "node --env-file-if-exists=.env src/server.js",
+    "dev": "node --watch --env-file-if-exists=.env src/server.js",
+    "probar-webhook": "node --env-file-if-exists=.env scripts/probar-webhook.js",
+    "probar-twilio": "node --env-file-if-exists=.env scripts/probar-twilio.js",
+    "demo": "node --env-file-if-exists=.env scripts/datos-demo.js"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "latest",
+    "express": "^5.1.0",
+    "twilio": "^6.3.0"
+  }
+}

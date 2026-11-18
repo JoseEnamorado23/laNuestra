@@ -1,0 +1,22 @@
+# Dependencias y secretos
+node_modules/
+.env
+.env.*
+!.env.example
+
+# Datos (base SQLite, respaldos y JSON antiguos)
+data/
+*.db
+*.db-wal
+*.db-shm
+respaldos/
+
+# Android
+app-android/.kotlin/
+*.apk
+*.aab
+
+# Sistema / editores
+.DS_Store
+Thumbs.db
+.vscode/
